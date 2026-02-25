@@ -1,0 +1,17 @@
+@TodoApi_HostAddress = http://localhost:5000
+
+GET {{TodoApi_HostAddress}}/weatherforecast HTTP/1.1
+Accept: application/json
+
+###
+POST {{TodoApi_HostAddress}}/api/todos HTTP/1.1
+Content-Type: application/json
+
+{
+  "title": "Buy groceries",
+  "isComplete": false
+}
+
+###
+GET {{TodoApi_HostAddress}}/api/todos HTTP/1.1
+Accept: application/json
