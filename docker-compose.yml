@@ -14,11 +14,14 @@ services:
       interval: 5s
       timeout: 5s
       retries: 10
+    networks:
+      - app-network
 
   backend:
     build:
       context: ./backend/TodoApi
     environment:
+      ASPNETCORE_URLS: http://0.0.0.0:5000
       ASPNETCORE_ENVIRONMENT: Production
       ConnectionStrings__Default: Host=db;Port=5432;Database=todos;Username=postgres;Password=postgres
     ports:
@@ -26,16 +29,21 @@ services:
     depends_on:
       db:
         condition: service_healthy
+    networks:
+      - app-network
 
   frontend:
     build:
       context: ./frontend
-      args:
-        REACT_APP_API_URL: http://backend:5000/api/todos
     ports:
       - "3000:80"
     depends_on:
       - backend
+    networks:
+      - app-network
 
 volumes:
   postgres_data:
+
+networks:
+  app-network:

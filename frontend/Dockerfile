@@ -1,19 +1,14 @@
-# ---------- Build Stage ----------
+# Stage 1: Build React app
 FROM node:25 AS build
 WORKDIR /app
-
 COPY package*.json ./
 RUN npm install
-
 COPY . .
-
-# API URL MUST be injected at build time
-ARG REACT_APP_API_URL
-ENV REACT_APP_API_URL=$REACT_APP_API_URL
-
 RUN npm run build
 
-# ---------- Runtime Stage ----------
+# Stage 2: Serve with Nginx
 FROM nginx:alpine
 COPY --from=build /app/build /usr/share/nginx/html
-EXPOSE 80
+
+# Replace default Nginx config with custom one
+COPY ./nginx.conf /etc/nginx/conf.d/default.conf

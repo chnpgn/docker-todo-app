@@ -1,7 +1,8 @@
 import { useEffect, useState } from "react";
 import "./App.css";
 
-const API = process.env.REACT_APP_API_URL;
+// Use relative path when behind Nginx reverse proxy
+const API = process.env.REACT_APP_API_URL || "/api/todos";
 
 const App = () => {
   const [todos, setTodos] = useState([]);
@@ -9,18 +10,30 @@ const App = () => {
 
   useEffect(() => {
     fetch(API)
-      .then((r) => r.json())
-      .then(setTodos);
+      .then((r) => {
+        if (!r.ok) throw new Error("Failed to fetch todos");
+        return r.json();
+      })
+      .then(setTodos)
+      .catch((err) => console.error(err));
   }, []);
 
   const addTodo = async () => {
-    const res = await fetch(API, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ title, isCompleted: false }),
-    });
-    setTodos([...todos, await res.json()]);
-    setTitle("");
+    try {
+      const res = await fetch(API, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ title, isCompleted: false }),
+      });
+
+      if (!res.ok) throw new Error("Failed to add todo");
+
+      const newTodo = await res.json();
+      setTodos([...todos, newTodo]);
+      setTitle("");
+    } catch (err) {
+      console.error(err);
+    }
   };
 
   return (
@@ -48,6 +61,6 @@ const App = () => {
       </ul>
     </div>
   );
-}
+};
 
 export default App;
