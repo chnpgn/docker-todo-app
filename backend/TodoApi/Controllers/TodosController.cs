@@ -21,4 +21,27 @@ public class TodosController : ControllerBase
         await _context.SaveChangesAsync();
         return Ok(todo);
     }
+
+        [HttpPut("{id}")]
+    public async Task<IActionResult> Update(int id, TodoItem updatedTodo)
+    {
+        var todo = await _context.Todos.FindAsync(id);
+        if (todo == null) return NotFound();
+
+        todo.Title = updatedTodo.Title;
+        todo.IsCompleted = updatedTodo.IsCompleted;
+        await _context.SaveChangesAsync();
+        return Ok(todo);
+    }
+
+    [HttpDelete("{id}")]
+    public async Task<IActionResult> Delete(int id)
+    {
+        var todo = await _context.Todos.FindAsync(id);
+        if (todo == null) return NotFound();
+
+        _context.Todos.Remove(todo);
+        await _context.SaveChangesAsync();
+        return NoContent();
+    }
 }

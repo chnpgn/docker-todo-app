@@ -20,6 +20,8 @@ const App = () => {
 
   const addTodo = async () => {
     try {
+      if (!title.trim()) return;
+
       const res = await fetch(API, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -29,8 +31,23 @@ const App = () => {
       if (!res.ok) throw new Error("Failed to add todo");
 
       const newTodo = await res.json();
-      setTodos([...todos, newTodo]);
+      setTodos((prev) => [...prev, newTodo]);
       setTitle("");
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
+  const deleteTodo = async (id) => {
+    try {
+      const res = await fetch(`${API}/${id}`, {
+        method: "DELETE",
+      });
+
+      if (!res.ok) throw new Error("Failed to delete todo");
+
+      // Remove from UI after successful delete
+      setTodos((prev) => prev.filter((t) => t.id !== id));
     } catch (err) {
       console.error(err);
     }
@@ -55,7 +72,13 @@ const App = () => {
       <ul className="todo-list">
         {todos.map((t) => (
           <li className="todo-item" key={t.id}>
-            {t.title}
+            <span>{t.title}</span>
+            <button
+              className="todo-delete"
+              onClick={() => deleteTodo(t.id)}
+            >
+              ❌
+            </button>
           </li>
         ))}
       </ul>
