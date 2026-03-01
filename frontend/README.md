@@ -1,70 +1,190 @@
-# Getting Started with Create React App
+# 🐳 Docker To-Do Application
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+A full-stack **To-Do application** built to demonstrate **Docker, Docker Compose, and real-world containerized workflows**.
 
-## Available Scripts
+The application consists of:
 
-In the project directory, you can run:
+- **Frontend**: React
+- **Backend**: ASP.NET Core Web API
+- **Database**: PostgreSQL
+- **Reverse Proxy (Production)**: Nginx
 
-### `npm start`
+The project supports **two modes of operation**:
+1. **Local (Hybrid) Mode** – frontend & backend run locally, database runs in Docker
+2. **Production Mode** – frontend, backend, and database all run in Docker
 
-Runs the app in the development mode.\
-Open [http://localhost:3000](http://localhost:3000) to view it in your browser.
+---
 
-The page will reload when you make changes.\
-You may also see any lint errors in the console.
+## 📐 Architecture Overview
 
-### `npm test`
+### Local Development (Hybrid Mode)
+    Browser
+    ↓
+    React Dev Server (localhost:3000)
+    ↓
+    ASP.NET Core API (localhost:5000)
+    ↓
+    PostgreSQL (Docker container)
+    
+    - Fast development and debugging
+    - Only PostgreSQL is containerized
 
-Launches the test runner in the interactive watch mode.\
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
+---
 
-### `npm run build`
+### Production (Fully Dockerized)
+    Browser
+    ↓
+    Nginx (frontend container :3000)
+    ↓
+    ASP.NET Core API (backend container :5000)
+    ↓
+    PostgreSQL (db container)
+    
+    
+    - Everything runs in Docker
+    - Docker DNS used internally (`backend`, `db`)
+    - Nginx reverse proxy removes CORS and hostname issues
 
-Builds the app for production to the `build` folder.\
-It correctly bundles React in production mode and optimizes the build for the best performance.
+---
 
-The build is minified and the filenames include the hashes.\
-Your app is ready to be deployed!
+## 🧰 Tech Stack
 
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
+| Layer | Technology |
+|------|------------|
+| Frontend | React |
+| Backend | ASP.NET Core |
+| Database | PostgreSQL |
+| ORM | Entity Framework Core |
+| Containers | Docker |
+| Orchestration | Docker Compose |
+| Reverse Proxy | Nginx |
 
-### `npm run eject`
+---
 
-**Note: this is a one-way operation. Once you `eject`, you can't go back!**
+## 📁 Project Structure
+    docker-todo-app/
+    │
+    ├── frontend/
+    │ ├── src/
+    │ ├── nginx.conf
+    │ ├── Dockerfile
+    │ └── package.json
+    │
+    ├── backend/
+    │ └── TodoApi/
+    │ ├── Controllers/
+    │ ├── Data/
+    │ ├── Models/
+    │ ├── Program.cs
+    │ └── Dockerfile
+    │__ docker-compose.db.yml
+    ├── docker-compose.yml
+    └── README.md
 
-If you aren't satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
+---
 
-Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you're on your own.
+# 🚀 Running the App — LOCAL MODE (Development)
 
-You don't have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn't feel obligated to use this feature. However we understand that this tool wouldn't be useful if you couldn't customize it when you are ready for it.
+In this mode:
 
-## Learn More
+    React and ASP.NET Core run **locally**
+    PostgreSQL runs in **Docker**
 
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
+---
 
-To learn React, check out the [React documentation](https://reactjs.org/).
+## ✅ Prerequisites
 
-### Code Splitting
+    - Node.js 20+
+    - .NET SDK 10
+    - Docker Desktop
+    - Git
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/code-splitting](https://facebook.github.io/create-react-app/docs/code-splitting)
+---
 
-### Analyzing the Bundle Size
+# 1️⃣ Start PostgreSQL (Docker) and PostgreSQL details
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size](https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size)
+From the project root:
 
-### Making a Progressive Web App
+    -  ``>bash
+    docker compose -f docker-compose.db.yml up
+     
+    Host: localhost
+    Port: 5432
+    Database: todos
+    Username: postgres
+    Password: postgres
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app](https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app)
+## 2️⃣ Run Backend Locally
 
-### Advanced Configuration
+    ``>bash
+    cd backend/TodoApi
+    dotnet restore
+    dotnet run
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/advanced-configuration](https://facebook.github.io/create-react-app/docs/advanced-configuration)
+## Backend URL:
+    http://localhost:5000
 
-### Deployment
+## 3️⃣ Run Frontend Locally
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/deployment](https://facebook.github.io/create-react-app/docs/deployment)
+    ``>bash
+        cd frontend
+        npm install
+        npm start
 
-### `npm run build` fails to minify
+## Frontend URL:
+    http://localhost:3000
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify](https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify)
+## ✅ Local Mode Notes
+
+    Frontend calls: http://localhost:5000/api/todos
+    No Docker DNS or reverse proxy involved
+    Best mode for development and debugging
+
+## 🐳 Running the App — PRODUCTION MODE (Dockerized)
+
+In this mode:
+
+    Frontend, backend, and database all run in Docker
+    Nginx proxies API requests
+    No hardcoded hostnames or CORS issues
+
+## 1️⃣ Build and Run All Services
+
+From the project root:
+
+    docker compose -f docker-compose.yml build --no-cache
+    docker compose -f docker-compose.yml up
+
+## 2️⃣ Access the Application
+
+    Frontend (Browser): http://localhost:3000
+    Backend (Internal): http://backend:5000
+    Database (Internal): db:5432
+
+⚠️ The browser never talks directly to the backend container.
+
+## 🔁 How API Calls Work in Production
+
+- Browser → /api/todos
+       → Nginx (frontend container)
+       → backend:5000
+       → PostgreSQL
+
+       The React app uses relative URLs: 
+       const API = "/api/todos";
+
+This allows the same frontend code to work in:
+
+    Local development
+    Docker production
+    Cloud deployments
+
+🧪 Features Implemented
+
+    ✅ Create todos
+    ✅ Read todos
+    ✅ Update todos (inline edit)
+    ✅ Toggle completed (checkbox)
+    ✅ Delete todos
+    ✅ Persistent storage (PostgreSQL)
+    ✅ Dockerized production setup
